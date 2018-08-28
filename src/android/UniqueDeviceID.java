@@ -47,8 +47,12 @@ public class UniqueDeviceID extends CordovaPlugin {
 
     public void onRequestPermissionResult(int requestCode, String[] permissions,
                                           int[] grantResults) throws JSONException {
-        if(requestCode == REQUEST_READ_PHONE_STATE){
-            getDeviceId();
+        if(requestCode == REQUEST_READ_PHONE_STATE && grantResults.length > 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED)
+                getDeviceId();
+            else {
+                this.callbackContext.error("User declined the request");
+            }
         }
     }
 
@@ -56,7 +60,6 @@ public class UniqueDeviceID extends CordovaPlugin {
         try {
             Context context = cordova.getActivity().getApplicationContext();
             TelephonyManager tm = (TelephonyManager) context.getSystemService(Context.TELEPHONY_SERVICE);
-
             String uuid;
             String androidID = Secure.getString(context.getContentResolver(), Secure.ANDROID_ID);
             String deviceID = tm.getDeviceId();
@@ -85,7 +88,7 @@ public class UniqueDeviceID extends CordovaPlugin {
         }
     }
 
-    private boolean hasPermission(String permission) throws Exception{
+    private boolean hasPermission(String permission) throws Exception {
         boolean hasPermission = true;
         Method method = null;
         try {
